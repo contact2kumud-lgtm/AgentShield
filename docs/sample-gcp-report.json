@@ -1,0 +1,144 @@
+{
+  "summary": {
+    "root": "gcp://projects",
+    "score": 0,
+    "risk_level": "CRITICAL",
+    "files_scanned": 3,
+    "findings": 5,
+    "severity": {
+      "CRITICAL": 3,
+      "HIGH": 2,
+      "MEDIUM": 0,
+      "LOW": 0,
+      "INFO": 0
+    },
+    "provider": "gcp"
+  },
+  "metadata": {
+    "provider": "gcp",
+    "projects": [
+      {
+        "project_id": "ai-prod",
+        "display_name": "AI Production",
+        "state": "ACTIVE",
+        "iam_memberships_scanned": 3,
+        "service_accounts_scanned": 2
+      }
+    ],
+    "identity_assessments": [
+      {
+        "member": "serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com",
+        "name": "customer-agent@ai-prod.iam.gserviceaccount.com",
+        "member_type": "serviceAccount",
+        "candidate_ai_identity": true,
+        "risk_points": 100,
+        "finding_count": 5,
+        "reasons": [
+          "Owner grants project-wide administrative control",
+          "Can read secret payloads",
+          "Long-lived user-managed service-account key"
+        ],
+        "roles": [
+          "roles/owner",
+          "roles/secretmanager.secretAccessor"
+        ],
+        "projects": [
+          "ai-prod"
+        ],
+        "blast_radius": "CRITICAL"
+      },
+      {
+        "member": "user:reader@example.com",
+        "name": "reader@example.com",
+        "member_type": "user",
+        "candidate_ai_identity": false,
+        "risk_points": 0,
+        "finding_count": 0,
+        "reasons": [
+          "Role roles/viewer"
+        ],
+        "roles": [
+          "roles/viewer"
+        ],
+        "projects": [
+          "ai-prod"
+        ],
+        "blast_radius": "LOW"
+      }
+    ],
+    "service_accounts_scanned": 2,
+    "visibility_gaps": []
+  },
+  "findings": [
+    {
+      "rule_id": "AS-GCP-AI-001",
+      "title": "AI workload identity has excessive GCP blast radius",
+      "severity": "CRITICAL",
+      "message": "Likely AI/agent identity customer-agent@ai-prod.iam.gserviceaccount.com holds broad role roles/owner in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/owner",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/owner; risk_points=65",
+      "remediation": "Create a dedicated least-privilege service account for the AI workload; constrain projects, APIs, secrets and impersonation paths.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-GCP-IAM-002",
+      "title": "Project Owner assignment",
+      "severity": "CRITICAL",
+      "message": "customer-agent@ai-prod.iam.gserviceaccount.com has Owner on GCP project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/owner",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/owner",
+      "remediation": "Replace Owner with task-specific predefined/custom roles and use privileged access only when needed.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-GCP-SA-001",
+      "title": "User-managed service-account key detected",
+      "severity": "CRITICAL",
+      "message": "Service account customer-agent@ai-prod.iam.gserviceaccount.com has a user-managed key approximately 615 days old.",
+      "file": "gcp://projects/ai-prod/serviceAccounts/customer-agent@ai-prod.iam.gserviceaccount.com/keys",
+      "line": 1,
+      "evidence": "key=projects/ai-prod/serviceAccounts/x/keys/key1; validAfter=2025-01-01T00:00:00Z",
+      "remediation": "Prefer Workload Identity Federation, metadata-based credentials or service-account impersonation; remove long-lived user-managed keys.",
+      "category": "identity",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.17 Authentication information"
+    },
+    {
+      "rule_id": "AS-GCP-AI-001",
+      "title": "AI workload identity has excessive GCP blast radius",
+      "severity": "HIGH",
+      "message": "Likely AI/agent identity customer-agent@ai-prod.iam.gserviceaccount.com holds broad role roles/secretmanager.secretAccessor in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/secretmanager.secretAccessor",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/secretmanager.secretAccessor; risk_points=30",
+      "remediation": "Create a dedicated least-privilege service account for the AI workload; constrain projects, APIs, secrets and impersonation paths.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-GCP-DATA-001",
+      "title": "Sensitive secret/decryption access",
+      "severity": "HIGH",
+      "message": "customer-agent@ai-prod.iam.gserviceaccount.com has sensitive data-access role roles/secretmanager.secretAccessor in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/secretmanager.secretAccessor",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/secretmanager.secretAccessor",
+      "remediation": "Scope secret/decryption access to exact workloads and resources; avoid project-wide grants for AI agents.",
+      "category": "data",
+      "cwe": null,
+      "owasp_llm": null,
+      "iso27001": "A.8.3 Information access restriction"
+    }
+  ]
+}

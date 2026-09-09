@@ -1,0 +1,14 @@
+title: AgentShield Security Reader
+description: Read-only permissions used by AgentShield GCP posture assessment.
+stage: GA
+includedPermissions:
+  - resourcemanager.projects.get
+  - resourcemanager.projects.list
+  - resourcemanager.projects.getIamPolicy
+  - iam.roles.get
+  - iam.serviceAccounts.get
+  - iam.serviceAccounts.list
+  - iam.serviceAccountKeys.get
+  - iam.serviceAccountKeys.list
+  - logging.sinks.get
+  - logging.sinks.list

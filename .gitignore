@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.sarif
+scan-results.json
+agentshield-report*.html
+aws-agentshield*.html
+aws-agentshield*.json
+azure-agentshield*.html
+azure-agentshield*.json
+.DS_Store
+
+# Keep the sanitized demo report in the repository
+!docs/sample-aws-report.html
+
+!docs/sample-azure-report.html
+
+gcp-agentshield*.html
+gcp-agentshield*.json
+*.mmd
+*.baseline.json
+
+!docs/sample-gcp-report.html
+!docs/sample-blast-radius.mmd

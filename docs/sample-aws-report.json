@@ -1,0 +1,119 @@
+{
+  "summary": {
+    "root": "aws://123456789012",
+    "score": 0,
+    "risk_level": "CRITICAL",
+    "files_scanned": 2,
+    "findings": 4,
+    "severity": {
+      "CRITICAL": 3,
+      "HIGH": 1,
+      "MEDIUM": 0,
+      "LOW": 0,
+      "INFO": 0
+    },
+    "provider": "aws"
+  },
+  "metadata": {
+    "provider": "aws",
+    "account_id": "123456789012",
+    "principal_arn": "arn:aws:iam::123456789012:user/scanner",
+    "region": "ap-south-1",
+    "ai_only": false,
+    "role_pattern": null,
+    "role_assessments": [
+      {
+        "name": "BedrockAgentRole",
+        "arn": "arn:aws:iam::123456789012:role/ai/BedrockAgentRole",
+        "candidate_ai_role": true,
+        "blast_radius": "CRITICAL",
+        "risk_points": 100,
+        "finding_count": 4,
+        "reasons": [
+          "AdministratorAccess",
+          "Wildcard Action",
+          "Privilege escalation path",
+          "Broad sensitive-data access"
+        ],
+        "trusted_services": [
+          "bedrock.amazonaws.com"
+        ],
+        "attached_policies": [
+          "AdministratorAccess"
+        ]
+      },
+      {
+        "name": "SafeReadRole",
+        "arn": "arn:aws:iam::123456789012:role/SafeReadRole",
+        "candidate_ai_role": true,
+        "blast_radius": "LOW",
+        "risk_points": 0,
+        "finding_count": 0,
+        "reasons": [],
+        "trusted_services": [
+          "lambda.amazonaws.com"
+        ],
+        "attached_policies": []
+      }
+    ],
+    "visibility_gaps": []
+  },
+  "findings": [
+    {
+      "rule_id": "AS-AWS-IAM-010",
+      "title": "AdministratorAccess attached to workload role",
+      "severity": "CRITICAL",
+      "message": "The role has the AWS managed AdministratorAccess policy attached.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AdministratorAccess",
+      "line": 1,
+      "evidence": "arn:aws:iam::aws:policy/AdministratorAccess",
+      "remediation": "Replace AdministratorAccess with a dedicated least-privilege policy containing only required actions and resources.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15"
+    },
+    {
+      "rule_id": "AS-AWS-IAM-013",
+      "title": "Wildcard AWS action",
+      "severity": "CRITICAL",
+      "message": "Policy grants all AWS actions.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AdministratorAccess",
+      "line": 1,
+      "evidence": "Statement 1: Action=['*'] Resource=['*']",
+      "remediation": "Replace Action '*' with the exact actions the AI workload requires.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15"
+    },
+    {
+      "rule_id": "AS-AWS-IAM-015",
+      "title": "Privilege-escalation capable permission",
+      "severity": "CRITICAL",
+      "message": "Role can perform actions commonly involved in AWS privilege escalation or role chaining.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AgentInline",
+      "line": 1,
+      "evidence": "Statement 1: Action=['iam:PassRole', 'secretsmanager:GetSecretValue'] Resource=['*']; matched=['iam:passrole']",
+      "remediation": "Remove privilege-escalation actions where possible. Scope iam:PassRole/sts:AssumeRole to exact approved role ARNs and conditions.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.18"
+    },
+    {
+      "rule_id": "AS-AWS-DATA-001",
+      "title": "Broad sensitive-data read access",
+      "severity": "HIGH",
+      "message": "Workload can read secrets, decrypt data, or access data using wildcard resources.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AgentInline",
+      "line": 1,
+      "evidence": "Statement 1: Action=['iam:PassRole', 'secretsmanager:GetSecretValue'] Resource=['*']; matched=['secretsmanager:getsecretvalue']",
+      "remediation": "Scope data and secret access to exact ARNs. Separate retrieval roles and use resource policies/conditions where possible.",
+      "category": "data",
+      "cwe": null,
+      "owasp_llm": null,
+      "iso27001": "A.8.3"
+    }
+  ]
+}

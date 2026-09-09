@@ -1,0 +1,18 @@
+flowchart LR
+  ROOT["AgentShield Blast Radius"]
+  GCP["Google Cloud"]
+  ROOT --> GCP
+  gcpid_0_customer_agent_ai_prod_iam_gserviceaccount_com["customer-agent@ai-prod.iam.gserviceaccount.com\nCRITICAL"]
+  GCP --> gcpid_0_customer_agent_ai_prod_iam_gserviceaccount_com
+  gcprole_0_0_roles_owner["Role\nroles/owner"]
+  gcpid_0_customer_agent_ai_prod_iam_gserviceaccount_com --> gcprole_0_0_roles_owner
+  gcprole_0_1_roles_secretmanager_secretAccessor["Role\nroles/secretmanager.secretAccessor"]
+  gcpid_0_customer_agent_ai_prod_iam_gserviceaccount_com --> gcprole_0_1_roles_secretmanager_secretAccessor
+  gcpproj_0_0_ai_prod["Project\nai-prod"]
+  gcpid_0_customer_agent_ai_prod_iam_gserviceaccount_com --> gcpproj_0_0_ai_prod
+  gcpid_1_reader_example_com["reader@example.com\nLOW"]
+  GCP --> gcpid_1_reader_example_com
+  gcprole_1_0_roles_viewer["Role\nroles/viewer"]
+  gcpid_1_reader_example_com --> gcprole_1_0_roles_viewer
+  gcpproj_1_0_ai_prod["Project\nai-prod"]
+  gcpid_1_reader_example_com --> gcpproj_1_0_ai_prod

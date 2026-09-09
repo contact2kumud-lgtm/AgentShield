@@ -1,0 +1,23 @@
+{
+  "Name": "AgentShield Security Reader",
+  "IsCustom": true,
+  "Description": "Read-only Azure permissions for AgentShield posture assessment. Replace AssignableScopes before deployment.",
+  "Actions": [
+    "Microsoft.Authorization/roleAssignments/read",
+    "Microsoft.Authorization/roleDefinitions/read",
+    "Microsoft.Authorization/policyAssignments/read",
+    "Microsoft.Resources/subscriptions/resourceGroups/read",
+    "Microsoft.Resources/subscriptions/resources/read",
+    "Microsoft.Security/pricings/read",
+    "Microsoft.Insights/diagnosticSettings/read",
+    "Microsoft.CognitiveServices/accounts/read",
+    "Microsoft.MachineLearningServices/workspaces/read",
+    "Microsoft.BotService/botServices/read"
+  ],
+  "NotActions": [],
+  "DataActions": [],
+  "NotDataActions": [],
+  "AssignableScopes": [
+    "/subscriptions/00000000-0000-0000-0000-000000000000"
+  ]
+}

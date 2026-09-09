@@ -1,0 +1,373 @@
+{
+  "overall_score": 0,
+  "overall_risk": "CRITICAL",
+  "providers": [
+    {
+      "provider": "aws",
+      "score": 0,
+      "risk_level": "CRITICAL",
+      "findings": 4,
+      "severity": {
+        "CRITICAL": 3,
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0,
+        "INFO": 0
+      },
+      "source": "docs/sample-aws-report.json"
+    },
+    {
+      "provider": "azure",
+      "score": 0,
+      "risk_level": "CRITICAL",
+      "findings": 8,
+      "severity": {
+        "CRITICAL": 4,
+        "HIGH": 3,
+        "MEDIUM": 1,
+        "LOW": 0,
+        "INFO": 0
+      },
+      "source": "docs/sample-azure-report.json"
+    },
+    {
+      "provider": "gcp",
+      "score": 0,
+      "risk_level": "CRITICAL",
+      "findings": 5,
+      "severity": {
+        "CRITICAL": 3,
+        "HIGH": 2,
+        "MEDIUM": 0,
+        "LOW": 0,
+        "INFO": 0
+      },
+      "source": "docs/sample-gcp-report.json"
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "AS-AWS-IAM-010",
+      "title": "AdministratorAccess attached to workload role",
+      "severity": "CRITICAL",
+      "message": "The role has the AWS managed AdministratorAccess policy attached.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AdministratorAccess",
+      "line": 1,
+      "evidence": "arn:aws:iam::aws:policy/AdministratorAccess",
+      "remediation": "Replace AdministratorAccess with a dedicated least-privilege policy containing only required actions and resources.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15",
+      "provider": "aws"
+    },
+    {
+      "rule_id": "AS-AWS-IAM-013",
+      "title": "Wildcard AWS action",
+      "severity": "CRITICAL",
+      "message": "Policy grants all AWS actions.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AdministratorAccess",
+      "line": 1,
+      "evidence": "Statement 1: Action=['*'] Resource=['*']",
+      "remediation": "Replace Action '*' with the exact actions the AI workload requires.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15",
+      "provider": "aws"
+    },
+    {
+      "rule_id": "AS-AWS-IAM-015",
+      "title": "Privilege-escalation capable permission",
+      "severity": "CRITICAL",
+      "message": "Role can perform actions commonly involved in AWS privilege escalation or role chaining.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AgentInline",
+      "line": 1,
+      "evidence": "Statement 1: Action=['iam:PassRole', 'secretsmanager:GetSecretValue'] Resource=['*']; matched=['iam:passrole']",
+      "remediation": "Remove privilege-escalation actions where possible. Scope iam:PassRole/sts:AssumeRole to exact approved role ARNs and conditions.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.18",
+      "provider": "aws"
+    },
+    {
+      "rule_id": "AS-AZ-AI-001",
+      "title": "AI identity has excessive Azure blast radius",
+      "severity": "CRITICAL",
+      "message": "Likely AI/agent identity CustomerSupport-AI-Agent can materially change Azure resources or authorization.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Create a dedicated managed identity for the AI workload, grant task-specific permissions only, add approval gates for high-impact actions, and continuously log agent activity.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-001",
+      "title": "High-privilege Azure role: Owner",
+      "severity": "CRITICAL",
+      "message": "CustomerSupport-AI-Agent is assigned Owner at subscription scope.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Reduce the assignment to the narrowest built-in/custom role and smallest resource scope. Prefer managed identity for workloads and use PIM/JIT for human privilege.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15 Access control",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-002",
+      "title": "Wildcard Azure role permissions",
+      "severity": "CRITICAL",
+      "message": "Role Owner grants wildcard control-plane or data-plane permissions.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Replace wildcard permissions with explicit actions/dataActions required by the workload.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15 Access control",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-003",
+      "title": "Azure RBAC privilege-escalation capability",
+      "severity": "CRITICAL",
+      "message": "Role Owner can create/change role assignments, role definitions, elevate access, or delegate managed identities.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Remove Microsoft.Authorization write/elevate permissions from workload identities; isolate delegation roles and protect them with PIM and approval.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-GCP-AI-001",
+      "title": "AI workload identity has excessive GCP blast radius",
+      "severity": "CRITICAL",
+      "message": "Likely AI/agent identity customer-agent@ai-prod.iam.gserviceaccount.com holds broad role roles/owner in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/owner",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/owner; risk_points=65",
+      "remediation": "Create a dedicated least-privilege service account for the AI workload; constrain projects, APIs, secrets and impersonation paths.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "gcp"
+    },
+    {
+      "rule_id": "AS-GCP-IAM-002",
+      "title": "Project Owner assignment",
+      "severity": "CRITICAL",
+      "message": "customer-agent@ai-prod.iam.gserviceaccount.com has Owner on GCP project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/owner",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/owner",
+      "remediation": "Replace Owner with task-specific predefined/custom roles and use privileged access only when needed.",
+      "category": "iam",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "gcp"
+    },
+    {
+      "rule_id": "AS-GCP-SA-001",
+      "title": "User-managed service-account key detected",
+      "severity": "CRITICAL",
+      "message": "Service account customer-agent@ai-prod.iam.gserviceaccount.com has a user-managed key approximately 615 days old.",
+      "file": "gcp://projects/ai-prod/serviceAccounts/customer-agent@ai-prod.iam.gserviceaccount.com/keys",
+      "line": 1,
+      "evidence": "key=projects/ai-prod/serviceAccounts/x/keys/key1; validAfter=2025-01-01T00:00:00Z",
+      "remediation": "Prefer Workload Identity Federation, metadata-based credentials or service-account impersonation; remove long-lived user-managed keys.",
+      "category": "identity",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.17 Authentication information",
+      "provider": "gcp"
+    },
+    {
+      "rule_id": "AS-AWS-DATA-001",
+      "title": "Broad sensitive-data read access",
+      "severity": "HIGH",
+      "message": "Workload can read secrets, decrypt data, or access data using wildcard resources.",
+      "file": "aws://iam/role/BedrockAgentRole/policy/AgentInline",
+      "line": 1,
+      "evidence": "Statement 1: Action=['iam:PassRole', 'secretsmanager:GetSecretValue'] Resource=['*']; matched=['secretsmanager:getsecretvalue']",
+      "remediation": "Scope data and secret access to exact ARNs. Separate retrieval roles and use resource policies/conditions where possible.",
+      "category": "data",
+      "cwe": null,
+      "owasp_llm": null,
+      "iso27001": "A.8.3",
+      "provider": "aws"
+    },
+    {
+      "rule_id": "AS-AZ-AI-011",
+      "title": "Azure AI local/key authentication remains enabled",
+      "severity": "HIGH",
+      "message": "AI/Cognitive Services account openai-prod reports disableLocalAuth=false.",
+      "file": "/subscriptions/sub-1/resourceGroups/ai/providers/Microsoft.CognitiveServices/accounts/openai-prod",
+      "line": 1,
+      "evidence": "disableLocalAuth=False",
+      "remediation": "Prefer Microsoft Entra ID + managed identity and disable local/key authentication where supported by the workload.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.17 Authentication information",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-AZ-DATA-001",
+      "title": "Sensitive key/secret access in Azure role",
+      "severity": "HIGH",
+      "message": "Role Owner includes access to secrets, keys, storage account keys, or AI service keys.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Use least-privilege data-plane roles, managed identity, scoped Key Vault permissions, and disable local/key authentication on AI services where supported.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.3 Information access restriction",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-004",
+      "title": "Workload identity has broad Azure scope",
+      "severity": "HIGH",
+      "message": "Machine identity CustomerSupport-AI-Agent has mutating/high-privilege access at subscription scope.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Scope workload permissions to the specific resource group or resource required by the application/agent.",
+      "category": "identity",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "azure"
+    },
+    {
+      "rule_id": "AS-GCP-AI-001",
+      "title": "AI workload identity has excessive GCP blast radius",
+      "severity": "HIGH",
+      "message": "Likely AI/agent identity customer-agent@ai-prod.iam.gserviceaccount.com holds broad role roles/secretmanager.secretAccessor in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/secretmanager.secretAccessor",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/secretmanager.secretAccessor; risk_points=30",
+      "remediation": "Create a dedicated least-privilege service account for the AI workload; constrain projects, APIs, secrets and impersonation paths.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights",
+      "provider": "gcp"
+    },
+    {
+      "rule_id": "AS-GCP-DATA-001",
+      "title": "Sensitive secret/decryption access",
+      "severity": "HIGH",
+      "message": "customer-agent@ai-prod.iam.gserviceaccount.com has sensitive data-access role roles/secretmanager.secretAccessor in project ai-prod.",
+      "file": "gcp://projects/ai-prod/iam/secretmanager.secretAccessor",
+      "line": 1,
+      "evidence": "member=serviceAccount:customer-agent@ai-prod.iam.gserviceaccount.com; role=roles/secretmanager.secretAccessor",
+      "remediation": "Scope secret/decryption access to exact workloads and resources; avoid project-wide grants for AI agents.",
+      "category": "data",
+      "cwe": null,
+      "owasp_llm": null,
+      "iso27001": "A.8.3 Information access restriction",
+      "provider": "gcp"
+    },
+    {
+      "rule_id": "AS-AZ-AI-010",
+      "title": "Azure AI account allows public network access",
+      "severity": "MEDIUM",
+      "message": "AI/Cognitive Services account openai-prod explicitly allows public network access.",
+      "file": "/subscriptions/sub-1/resourceGroups/ai/providers/Microsoft.CognitiveServices/accounts/openai-prod",
+      "line": 1,
+      "evidence": "publicNetworkAccess=Enabled",
+      "remediation": "For sensitive workloads, use private endpoints/network ACLs and explicitly disable public network access where architecture permits.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.20 Networks security",
+      "provider": "azure"
+    }
+  ],
+  "identities": [
+    {
+      "provider": "aws",
+      "name": "BedrockAgentRole",
+      "type": "IAM Role",
+      "blast_radius": "CRITICAL",
+      "risk_points": 100,
+      "ai": true,
+      "roles": [
+        "AdministratorAccess"
+      ]
+    },
+    {
+      "provider": "azure",
+      "name": "CustomerSupport-AI-Agent",
+      "type": "servicePrincipal",
+      "blast_radius": "CRITICAL",
+      "risk_points": 100,
+      "ai": true,
+      "roles": [
+        "Owner"
+      ]
+    },
+    {
+      "provider": "gcp",
+      "name": "customer-agent@ai-prod.iam.gserviceaccount.com",
+      "type": "serviceAccount",
+      "blast_radius": "CRITICAL",
+      "risk_points": 100,
+      "ai": true,
+      "roles": [
+        "roles/owner",
+        "roles/secretmanager.secretAccessor"
+      ]
+    },
+    {
+      "provider": "aws",
+      "name": "SafeReadRole",
+      "type": "IAM Role",
+      "blast_radius": "LOW",
+      "risk_points": 0,
+      "ai": true,
+      "roles": []
+    },
+    {
+      "provider": "azure",
+      "name": "Security Reader",
+      "type": "user",
+      "blast_radius": "LOW",
+      "risk_points": 0,
+      "ai": false,
+      "roles": [
+        "Reader"
+      ]
+    },
+    {
+      "provider": "gcp",
+      "name": "reader@example.com",
+      "type": "user",
+      "blast_radius": "LOW",
+      "risk_points": 0,
+      "ai": false,
+      "roles": [
+        "roles/viewer"
+      ]
+    }
+  ],
+  "reports": 3
+}

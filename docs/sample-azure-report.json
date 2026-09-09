@@ -1,0 +1,190 @@
+{
+  "summary": {
+    "root": "azure://subscriptions",
+    "score": 0,
+    "risk_level": "CRITICAL",
+    "files_scanned": 2,
+    "findings": 8,
+    "severity": {
+      "CRITICAL": 4,
+      "HIGH": 3,
+      "MEDIUM": 1,
+      "LOW": 0,
+      "INFO": 0
+    },
+    "provider": "azure"
+  },
+  "metadata": {
+    "provider": "azure",
+    "tenant_ids": [
+      "tenant-1"
+    ],
+    "subscriptions": [
+      {
+        "id": "sub-1",
+        "name": "Production",
+        "state": "Enabled",
+        "tenant_id": "tenant-1",
+        "assignments_scanned": 2,
+        "ai_resources_scanned": 1
+      }
+    ],
+    "identity_assessments": [
+      {
+        "principal_id": "sp-ai",
+        "name": "CustomerSupport-AI-Agent",
+        "principal_type": "servicePrincipal",
+        "candidate_ai_identity": true,
+        "blast_radius": "CRITICAL",
+        "risk_points": 100,
+        "finding_count": 6,
+        "roles": [
+          "Owner"
+        ],
+        "scopes": [
+          "/subscriptions/sub-1"
+        ],
+        "reasons": [
+          "Owner at SUBSCRIPTION scope",
+          "Wildcard permissions",
+          "Can change/elevate Azure authorization",
+          "Can access secrets/keys",
+          "Machine identity at SUBSCRIPTION scope",
+          "AI identity can perform high-impact Azure actions"
+        ]
+      },
+      {
+        "principal_id": "user-safe",
+        "name": "Security Reader",
+        "principal_type": "user",
+        "candidate_ai_identity": false,
+        "blast_radius": "LOW",
+        "risk_points": 0,
+        "finding_count": 0,
+        "roles": [
+          "Reader"
+        ],
+        "scopes": [
+          "/subscriptions/sub-1/resourceGroups/rg-safe"
+        ],
+        "reasons": []
+      }
+    ],
+    "ai_resources_scanned": 1,
+    "visibility_gaps": []
+  },
+  "findings": [
+    {
+      "rule_id": "AS-AZ-RBAC-001",
+      "title": "High-privilege Azure role: Owner",
+      "severity": "CRITICAL",
+      "message": "CustomerSupport-AI-Agent is assigned Owner at subscription scope.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Reduce the assignment to the narrowest built-in/custom role and smallest resource scope. Prefer managed identity for workloads and use PIM/JIT for human privilege.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15 Access control"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-002",
+      "title": "Wildcard Azure role permissions",
+      "severity": "CRITICAL",
+      "message": "Role Owner grants wildcard control-plane or data-plane permissions.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Replace wildcard permissions with explicit actions/dataActions required by the workload.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.15 Access control"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-003",
+      "title": "Azure RBAC privilege-escalation capability",
+      "severity": "CRITICAL",
+      "message": "Role Owner can create/change role assignments, role definitions, elevate access, or delegate managed identities.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Remove Microsoft.Authorization write/elevate permissions from workload identities; isolate delegation roles and protect them with PIM and approval.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-AZ-DATA-001",
+      "title": "Sensitive key/secret access in Azure role",
+      "severity": "HIGH",
+      "message": "Role Owner includes access to secrets, keys, storage account keys, or AI service keys.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Use least-privilege data-plane roles, managed identity, scoped Key Vault permissions, and disable local/key authentication on AI services where supported.",
+      "category": "rbac",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.3 Information access restriction"
+    },
+    {
+      "rule_id": "AS-AZ-RBAC-004",
+      "title": "Workload identity has broad Azure scope",
+      "severity": "HIGH",
+      "message": "Machine identity CustomerSupport-AI-Agent has mutating/high-privilege access at subscription scope.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Scope workload permissions to the specific resource group or resource required by the application/agent.",
+      "category": "identity",
+      "cwe": "CWE-250",
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-AZ-AI-001",
+      "title": "AI identity has excessive Azure blast radius",
+      "severity": "CRITICAL",
+      "message": "Likely AI/agent identity CustomerSupport-AI-Agent can materially change Azure resources or authorization.",
+      "file": "azure://sub-1/rbac/sp-ai",
+      "line": 1,
+      "evidence": "principal=CustomerSupport-AI-Agent; type=servicePrincipal; role=Owner; scope=/subscriptions/sub-1",
+      "remediation": "Create a dedicated managed identity for the AI workload, grant task-specific permissions only, add approval gates for high-impact actions, and continuously log agent activity.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.2 Privileged access rights"
+    },
+    {
+      "rule_id": "AS-AZ-AI-010",
+      "title": "Azure AI account allows public network access",
+      "severity": "MEDIUM",
+      "message": "AI/Cognitive Services account openai-prod explicitly allows public network access.",
+      "file": "/subscriptions/sub-1/resourceGroups/ai/providers/Microsoft.CognitiveServices/accounts/openai-prod",
+      "line": 1,
+      "evidence": "publicNetworkAccess=Enabled",
+      "remediation": "For sensitive workloads, use private endpoints/network ACLs and explicitly disable public network access where architecture permits.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.8.20 Networks security"
+    },
+    {
+      "rule_id": "AS-AZ-AI-011",
+      "title": "Azure AI local/key authentication remains enabled",
+      "severity": "HIGH",
+      "message": "AI/Cognitive Services account openai-prod reports disableLocalAuth=false.",
+      "file": "/subscriptions/sub-1/resourceGroups/ai/providers/Microsoft.CognitiveServices/accounts/openai-prod",
+      "line": 1,
+      "evidence": "disableLocalAuth=False",
+      "remediation": "Prefer Microsoft Entra ID + managed identity and disable local/key authentication where supported by the workload.",
+      "category": "ai-resource",
+      "cwe": null,
+      "owasp_llm": "LLM06",
+      "iso27001": "A.5.17 Authentication information"
+    }
+  ]
+}

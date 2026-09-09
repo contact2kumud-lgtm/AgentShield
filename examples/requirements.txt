@@ -1,0 +1,2 @@
+requests
+fastapi==0.115.11

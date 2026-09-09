@@ -1,0 +1,20 @@
+# Intentionally vulnerable demonstration content
+examples/
+
+# Test fixtures intentionally contain dangerous IAM examples
+tests/
+
+# AgentShield's own detection signatures / analyzers necessarily mention risky patterns
+agentshield/rules.py
+agentshield/scanners/aws.py
+agentshield/scanners/azure.py
+agentshield/scanners/gcp.py
+README.md
+
+# Generated demonstration assessment
+docs/sample-aws-report.json
+docs/sample-azure-report.json
+docs/sample-gcp-report.json
+CHANGELOG.md
+
+docs/sample-multicloud-dashboard.json

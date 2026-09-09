@@ -1,0 +1,7 @@
+{
+  "name": "finance-ops-agent",
+  "role": "AdministratorAccess",
+  "permissions": "*",
+  "human_approval": false,
+  "audit_enabled": false
+}
